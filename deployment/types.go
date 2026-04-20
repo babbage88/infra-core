@@ -54,3 +54,40 @@ type GarageTokenResult struct {
 	SecretAccessKey   string `json:"secret_access_key"`
 	MCAliasSetCommand string `json:"mc_alias_set_command"`
 }
+
+type GarageNodeRequest struct {
+	SSH               SSHOptions `json:"ssh,omitempty"`
+	Version           string     `json:"version,omitempty"`
+	BinaryPath        string     `json:"binary_path,omitempty"`
+	ConfigPath        string     `json:"config_path,omitempty"`
+	MetadataDir       string     `json:"metadata_dir,omitempty"`
+	DataDir           string     `json:"data_dir,omitempty"`
+	DBEngine          string     `json:"db_engine,omitempty"`
+	ReplicationFactor int        `json:"replication_factor,omitempty"`
+	RPCBindAddr       string     `json:"rpc_bind_addr,omitempty"`
+	RPCPublicAddr     string     `json:"rpc_public_addr,omitempty"`
+	RPCSecret         string     `json:"rpc_secret,omitempty"`
+	S3APIBindAddr     string     `json:"s3_api_bind_addr,omitempty"`
+	S3Region          string     `json:"s3_region,omitempty"`
+	S3RootDomain      string     `json:"s3_root_domain,omitempty"`
+	S3WebBindAddr     string     `json:"s3_web_bind_addr,omitempty"`
+	S3WebRootDomain   string     `json:"s3_web_root_domain,omitempty"`
+	S3WebIndex        string     `json:"s3_web_index,omitempty"`
+	K2VAPIBindAddr    string     `json:"k2v_api_bind_addr,omitempty"`
+	AdminAPIBindAddr  string     `json:"admin_api_bind_addr,omitempty"`
+	AdminToken        string     `json:"admin_token,omitempty"`
+	MetricsToken      string     `json:"metrics_token,omitempty"`
+	LogLevel          string     `json:"log_level,omitempty"`
+}
+
+type GarageNodeResult struct {
+	Host          string `json:"host"`
+	BinaryPath    string `json:"binary_path"`
+	ConfigPath    string `json:"config_path"`
+	ServiceName   string `json:"service_name"`
+	RPCPublicAddr string `json:"rpc_public_addr"`
+	S3Endpoint    string `json:"s3_endpoint"`
+	AdminEndpoint string `json:"admin_endpoint"`
+	AdminToken    string `json:"admin_token"`
+	MetricsToken  string `json:"metrics_token"`
+}
