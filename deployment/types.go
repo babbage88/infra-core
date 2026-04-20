@@ -91,3 +91,19 @@ type GarageNodeResult struct {
 	AdminToken    string `json:"admin_token"`
 	MetricsToken  string `json:"metrics_token"`
 }
+
+type ValkeyInstallRequest struct {
+	SSH      SSHOptions `json:"ssh,omitempty"`
+	Username string     `json:"username,omitempty"`
+	Password string     `json:"password,omitempty"`
+	Bind     string     `json:"bind,omitempty"`
+	Port     int        `json:"port,omitempty"`
+	ACLFile  string     `json:"acl_file,omitempty"`
+}
+
+type ValkeyInstallResult struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+	URI      string `json:"uri"`
+}
