@@ -1,12 +1,14 @@
 package deployment
 
 type SSHOptions struct {
-	Host       string `json:"host,omitempty"`
-	User       string `json:"user,omitempty"`
-	KeyPath    string `json:"key_path,omitempty"`
-	Passphrase string `json:"passphrase,omitempty"`
-	UseAgent   bool   `json:"use_agent,omitempty"`
-	Port       uint   `json:"port,omitempty"`
+	Host             string `json:"host,omitempty"`
+	User             string `json:"user,omitempty"`
+	KeyPath          string `json:"key_path,omitempty"` // Deprecated for HTTP callers; server-local path only.
+	PrivateKeyPEM    string `json:"private_key_pem,omitempty"`
+	PrivateKeyBase64 string `json:"private_key_base64,omitempty"`
+	Passphrase       string `json:"passphrase,omitempty"`
+	UseAgent         bool   `json:"use_agent,omitempty"`
+	Port             uint   `json:"port,omitempty"`
 }
 
 type ProxyInstallRequest struct {
