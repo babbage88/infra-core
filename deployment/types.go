@@ -109,3 +109,20 @@ type ValkeyInstallResult struct {
 	Username string `json:"username"`
 	URI      string `json:"uri"`
 }
+
+type MariaDBInstallRequest struct {
+	SSH          SSHOptions `json:"ssh,omitempty"`
+	DatabaseName string     `json:"db_name,omitempty"`
+	Username     string     `json:"username,omitempty"`
+	Password     string     `json:"password,omitempty"`
+	Bind         string     `json:"bind,omitempty"`
+	Port         int        `json:"port,omitempty"`
+}
+
+type MariaDBInstallResult struct {
+	Host         string `json:"host"`
+	Port         int    `json:"port"`
+	DatabaseName string `json:"db_name"`
+	Username     string `json:"username"`
+	URI          string `json:"uri"`
+}

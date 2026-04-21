@@ -173,6 +173,31 @@ func EndpointSpecs() []EndpointSpec {
 				URI:      "redis://app:secret@cache.example.internal:6379",
 			},
 		},
+		{
+			ID:           "mariadb-install",
+			Group:        "Database",
+			Name:         "Install MariaDB",
+			Method:       "POST",
+			Path:         "/api/v1/database/mariadb/install",
+			Summary:      "Install and configure MariaDB for remote access",
+			RequestType:  "MariaDBInstallRequest",
+			ResponseType: "MariaDBInstallResult",
+			Body: MariaDBInstallRequest{
+				SSH:          exampleSSHOptions("db.example.internal"),
+				DatabaseName: "appdb",
+				Username:     "app",
+				Password:     "secret",
+				Bind:         "0.0.0.0",
+				Port:         3306,
+			},
+			ResponseExample: MariaDBInstallResult{
+				Host:         "db.example.internal",
+				Port:         3306,
+				DatabaseName: "appdb",
+				Username:     "app",
+				URI:          "mysql://app:secret@db.example.internal:3306/appdb",
+			},
+		},
 	}
 }
 
