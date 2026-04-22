@@ -1,16 +1,19 @@
 package deployment
 
+import "encoding/json"
+
+// swagger:ignore
 type EndpointSpec struct {
-	ID              string `json:"id"`
-	Group           string `json:"group"`
-	Name            string `json:"name"`
-	Method          string `json:"method"`
-	Path            string `json:"path"`
-	Summary         string `json:"summary"`
-	RequestType     string `json:"request_type,omitempty"`
-	ResponseType    string `json:"response_type,omitempty"`
-	Body            any    `json:"body"`
-	ResponseExample any    `json:"response_example,omitempty"`
+	ID              string          `json:"id"`
+	Group           string          `json:"group"`
+	Name            string          `json:"name"`
+	Method          string          `json:"method"`
+	Path            string          `json:"path"`
+	Summary         string          `json:"summary"`
+	RequestType     string          `json:"request_type,omitempty"`
+	ResponseType    string          `json:"response_type,omitempty"`
+	Body            json.RawMessage `json:"body"`
+	ResponseExample json.RawMessage `json:"response_example,omitempty"`
 }
 
 func EndpointSpecs() []EndpointSpec {
@@ -24,7 +27,7 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:         "Service liveness",
 			ResponseType:    "HealthResult",
 			Body:            nil,
-			ResponseExample: map[string]string{"status": "ok"},
+			ResponseExample: rawExample(map[string]string{"status": "ok"}),
 		},
 		{
 			ID:           "proxy-nginx",
@@ -35,18 +38,18 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:      "Remote web proxy installer",
 			RequestType:  "ProxyInstallRequest",
 			ResponseType: "ProxyInstallResult",
-			Body: ProxyInstallRequest{
+			Body: rawExample(ProxyInstallRequest{
 				SSH:             exampleSSHOptions("proxy.example.internal"),
 				LocalConfigPath: "",
-			},
-			ResponseExample: ProxyInstallResult{
+			}),
+			ResponseExample: rawExample(ProxyInstallResult{
 				Host:        "proxy.example.internal",
 				Name:        "nginx",
 				PackageName: "nginx",
 				BinaryName:  "nginx",
 				ServiceName: "nginx",
 				ConfigPath:  "/etc/nginx/nginx.conf",
-			},
+			}),
 		},
 		{
 			ID:           "proxy-haproxy",
@@ -57,18 +60,18 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:      "Remote web proxy installer",
 			RequestType:  "ProxyInstallRequest",
 			ResponseType: "ProxyInstallResult",
-			Body: ProxyInstallRequest{
+			Body: rawExample(ProxyInstallRequest{
 				SSH:             exampleSSHOptions("proxy.example.internal"),
 				LocalConfigPath: "",
-			},
-			ResponseExample: ProxyInstallResult{
+			}),
+			ResponseExample: rawExample(ProxyInstallResult{
 				Host:        "proxy.example.internal",
 				Name:        "haproxy",
 				PackageName: "haproxy",
 				BinaryName:  "haproxy",
 				ServiceName: "haproxy",
 				ConfigPath:  "/etc/haproxy/haproxy.cfg",
-			},
+			}),
 		},
 		{
 			ID:           "garage-node",
@@ -79,7 +82,7 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:      "Deploy a Garage S3 storage node",
 			RequestType:  "GarageNodeRequest",
 			ResponseType: "GarageNodeResult",
-			Body: GarageNodeRequest{
+			Body: rawExample(GarageNodeRequest{
 				SSH:               exampleSSHOptions("garage.example.internal"),
 				Version:           "v2.2.0",
 				BinaryPath:        "/usr/local/bin/garage",
@@ -102,8 +105,8 @@ func EndpointSpecs() []EndpointSpec {
 				AdminToken:        "",
 				MetricsToken:      "",
 				LogLevel:          "garage=info",
-			},
-			ResponseExample: GarageNodeResult{
+			}),
+			ResponseExample: rawExample(GarageNodeResult{
 				Host:          "garage.example.internal",
 				BinaryPath:    "/usr/local/bin/garage",
 				ConfigPath:    "/etc/garage.toml",
@@ -113,7 +116,7 @@ func EndpointSpecs() []EndpointSpec {
 				AdminEndpoint: "http://garage.example.internal:3903",
 				AdminToken:    "generated-admin-token",
 				MetricsToken:  "generated-metrics-token",
-			},
+			}),
 		},
 		{
 			ID:           "garage-token",
@@ -124,7 +127,7 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:      "Create bucket credentials",
 			RequestType:  "GarageTokenRequest",
 			ResponseType: "GarageTokenResult",
-			Body: GarageTokenRequest{
+			Body: rawExample(GarageTokenRequest{
 				SSH:                exampleSSHOptions("garage.example.internal"),
 				BucketName:         "app-assets",
 				KeyName:            "app-assets-key",
@@ -138,8 +141,8 @@ func EndpointSpecs() []EndpointSpec {
 				S3Endpoint:         "",
 				LayoutZone:         "dc1",
 				LayoutCapacity:     "100G",
-			},
-			ResponseExample: GarageTokenResult{
+			}),
+			ResponseExample: rawExample(GarageTokenResult{
 				Host:              "garage.example.internal",
 				S3Endpoint:        "http://garage.example.internal:3900",
 				BucketName:        "app-assets",
@@ -147,7 +150,7 @@ func EndpointSpecs() []EndpointSpec {
 				AccessKeyID:       "generated-access-key",
 				SecretAccessKey:   "generated-secret-key",
 				MCAliasSetCommand: "mc alias set garage http://garage.example.internal:3900 generated-access-key generated-secret-key",
-			},
+			}),
 		},
 		{
 			ID:           "valkey-install",
@@ -158,20 +161,20 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:      "Install and configure Valkey for remote access",
 			RequestType:  "ValkeyInstallRequest",
 			ResponseType: "ValkeyInstallResult",
-			Body: ValkeyInstallRequest{
+			Body: rawExample(ValkeyInstallRequest{
 				SSH:      exampleSSHOptions("cache.example.internal"),
 				Username: "app",
 				Password: "secret",
 				Bind:     "0.0.0.0",
 				Port:     6379,
 				ACLFile:  "",
-			},
-			ResponseExample: ValkeyInstallResult{
+			}),
+			ResponseExample: rawExample(ValkeyInstallResult{
 				Host:     "cache.example.internal",
 				Port:     6379,
 				Username: "app",
 				URI:      "redis://app:secret@cache.example.internal:6379",
-			},
+			}),
 		},
 		{
 			ID:           "mariadb-install",
@@ -182,21 +185,21 @@ func EndpointSpecs() []EndpointSpec {
 			Summary:      "Install and configure MariaDB for remote access",
 			RequestType:  "MariaDBInstallRequest",
 			ResponseType: "MariaDBInstallResult",
-			Body: MariaDBInstallRequest{
+			Body: rawExample(MariaDBInstallRequest{
 				SSH:          exampleSSHOptions("db.example.internal"),
 				DatabaseName: "appdb",
 				Username:     "app",
 				Password:     "secret",
 				Bind:         "0.0.0.0",
 				Port:         3306,
-			},
-			ResponseExample: MariaDBInstallResult{
+			}),
+			ResponseExample: rawExample(MariaDBInstallResult{
 				Host:         "db.example.internal",
 				Port:         3306,
 				DatabaseName: "appdb",
 				Username:     "app",
 				URI:          "mysql://app:secret@db.example.internal:3306/appdb",
-			},
+			}),
 		},
 	}
 }
@@ -213,4 +216,12 @@ func exampleSSHOptions(host string) SSHOptions {
 
 func BoolPtr(value bool) *bool {
 	return &value
+}
+
+func rawExample(value interface{}) json.RawMessage {
+	payload, err := json.Marshal(value)
+	if err != nil {
+		return nil
+	}
+	return payload
 }

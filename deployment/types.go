@@ -126,3 +126,68 @@ type MariaDBInstallResult struct {
 	Username     string `json:"username"`
 	URI          string `json:"uri"`
 }
+
+type ProxmoxAuthOptions struct {
+	HostURL    string `json:"host_url,omitempty"`
+	APIToken   string `json:"api_token,omitempty"` // Format: user@realm!tokenid=secret.
+	APITokenID string `json:"api_token_id,omitempty"`
+	APISecret  string `json:"api_secret,omitempty"`
+	Username   string `json:"username,omitempty"`
+	Password   string `json:"password,omitempty"`
+	UseToken   *bool  `json:"use_token,omitempty"`
+	SkipTLS    *bool  `json:"skip_tls,omitempty"`
+}
+
+type ProxmoxVM struct {
+	VMID            int     `json:"vmid"`
+	Name            string  `json:"name"`
+	Status          string  `json:"status"`
+	CPU             float64 `json:"cpu,omitempty"`
+	MaxMem          int64   `json:"maxmem,omitempty"`
+	MemHost         int     `json:"memhost,omitempty"`
+	Mem             int64   `json:"mem,omitempty"`
+	MaxDisk         int64   `json:"maxdisk,omitempty"`
+	NetIn           int     `json:"netin,omitempty"`
+	NetOut          int     `json:"netout,omitempty"`
+	Disk            int64   `json:"disk,omitempty"`
+	DiskRead        int     `json:"diskread,omitempty"`
+	DiskWrite       int     `json:"diskwrite,omitempty"`
+	Node            string  `json:"node,omitempty"`
+	PID             int     `json:"pid,omitempty"`
+	PressureCPUFull int     `json:"pressurecpufull,omitempty"`
+	PressureCPUSome int     `json:"pressurecpusome,omitempty"`
+	PressureIOFull  int     `json:"pressureiofull,omitempty"`
+	PressureIOSome  int     `json:"pressureiosome,omitempty"`
+	PressureMemFull int     `json:"pressurememoryfull,omitempty"`
+	PressureMemSome int     `json:"pressurememorysome,omitempty"`
+	QMStatus        string  `json:"qmstatus,omitempty"`
+	RunningMachine  string  `json:"running-machine,omitempty"`
+	RunningQemu     string  `json:"running-qemu,omitempty"`
+	Serial          int     `json:"serial,omitempty"`
+	Tags            string  `json:"tags,omitempty"`
+	Template        int     `json:"template,omitempty"`
+	Uptime          int64   `json:"uptime,omitempty"`
+}
+
+type ProxmoxVMListRequest struct {
+	Auth ProxmoxAuthOptions `json:"auth,omitempty"`
+	Node string             `json:"node,omitempty"`
+	Full *bool              `json:"full,omitempty"`
+}
+
+type ProxmoxVMListResult struct {
+	Node string      `json:"node"`
+	VMs  []ProxmoxVM `json:"vms"`
+}
+
+type ProxmoxVMStartRequest struct {
+	Auth ProxmoxAuthOptions `json:"auth,omitempty"`
+	Node string             `json:"node,omitempty"`
+	VMID int                `json:"vmid,omitempty"`
+}
+
+type ProxmoxVMStartResult struct {
+	Node string `json:"node"`
+	VMID int    `json:"vmid"`
+	UPID string `json:"upid,omitempty"`
+}
