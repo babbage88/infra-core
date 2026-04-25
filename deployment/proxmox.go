@@ -3,11 +3,11 @@ package deployment
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/tls"
 	"net/http"
 	"net/url"
 	"path"
@@ -772,4 +772,12 @@ func proxmoxBoolFlag(value bool) string {
 		return "1"
 	}
 	return "0"
+}
+
+func parseAPIToken(apiToken string) (string, string, error) {
+	tokenID, secret, ok := strings.Cut(strings.TrimSpace(apiToken), "=")
+	if !ok || tokenID == "" || secret == "" {
+		return "", "", fmt.Errorf("invalid Proxmox API token format; expected USER@REALM!TOKENID=SECRET")
+	}
+	return tokenID, secret, nil
 }
