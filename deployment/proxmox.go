@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/tls"
 	"net/http"
 	"net/url"
 	"path"
@@ -563,4 +564,212 @@ func newProxmoxClient(auth ProxmoxAuthOptions) (*proxmoxClient, error) {
 	}, nil
 }
 
-func insecureTLSConfig(auth ProxmoxAuthOptions) *tls.Config
+func insecureTLSConfig(auth ProxmoxAuthOptions) *tls.Config {
+	skipTLS := true
+	if auth.SkipTLS != nil {
+		skipTLS = *auth.SkipTLS
+	}
+	return &tls.Config{InsecureSkipVerify: skipTLS}
+}
+
+func (c *proxmoxClient) do(ctx context.Context, method string, path string, body url.Values, out interface{}) error {
+	fullURL := *c.baseURL
+	fullURL.Path = strings.TrimRight(c.baseURL.Path, "/") + path
+
+	var reader io.Reader
+	if body != nil {
+		reader = bytes.NewBufferString(body.Encode())
+	}
+	req, err := http.NewRequestWithContext(ctx, method, fullURL.String(), reader)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Accept", "application/json")
+	if body != nil {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+	req.Header.Set("Authorization", "PVEAPIToken="+c.auth.TokenID+"="+c.auth.Secret)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("read proxmox response: %w", err)
+	}
+	if resp.StatusCode >= 400 {
+		return &proxmoxAPIError{Status: resp.StatusCode, Body: string(bodyBytes)}
+	}
+	if out == nil || len(bodyBytes) == 0 {
+		return nil
+	}
+
+	var wrapper struct {
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(bodyBytes, &wrapper); err != nil {
+		return fmt.Errorf("decode proxmox response: %w", err)
+	}
+	if len(wrapper.Data) == 0 {
+		return nil
+	}
+	if err := json.Unmarshal(wrapper.Data, out); err != nil {
+		return fmt.Errorf("decode proxmox data: %w", err)
+	}
+	return nil
+}
+
+func (c *proxmoxClient) CreateLXC(ctx context.Context, node string, req ProxmoxLXCRequest) error {
+	params := url.Values{}
+	params.Set("vmid", strconv.Itoa(req.VMID))
+	params.Set("hostname", req.Hostname)
+	if strings.TrimSpace(req.Password) != "" {
+		params.Set("password", req.Password)
+	}
+	if strings.TrimSpace(req.OSTemplate) != "" {
+		params.Set("ostemplate", req.OSTemplate)
+	}
+	if len(req.SshPublicKeys) > 0 {
+		params.Set("ssh-public-keys", strings.Join(req.SshPublicKeys, "\n"))
+	}
+	if strings.TrimSpace(req.Storage) != "" {
+		params.Set("storage", req.Storage)
+	}
+	if strings.TrimSpace(req.RootFSSize) != "" && strings.TrimSpace(req.Storage) != "" {
+		params.Set("rootfs", fmt.Sprintf("%s:%s", req.Storage, req.RootFSSize))
+	}
+	if req.Memory > 0 {
+		params.Set("memory", strconv.Itoa(req.Memory))
+	}
+	if req.Swap > 0 {
+		params.Set("swap", strconv.Itoa(req.Swap))
+	}
+	if req.Cores > 0 {
+		params.Set("cores", strconv.Itoa(req.Cores))
+	}
+	if req.CPULimit > 0 {
+		params.Set("cpulimit", strconv.Itoa(req.CPULimit))
+	}
+	if req.CPUUnits > 0 {
+		params.Set("cpuunits", strconv.Itoa(req.CPUUnits))
+	}
+	if strings.TrimSpace(req.Net0) != "" {
+		params.Set("net0", req.Net0)
+	}
+	if strings.TrimSpace(req.Arch) != "" {
+		params.Set("arch", req.Arch)
+	}
+	if strings.TrimSpace(req.Cmode) != "" {
+		params.Set("cmode", req.Cmode)
+	}
+	if strings.TrimSpace(req.Features) != "" {
+		params.Set("features", req.Features)
+	}
+	if strings.TrimSpace(req.Nameserver) != "" {
+		params.Set("nameserver", req.Nameserver)
+	}
+	if strings.TrimSpace(req.SearchDomain) != "" {
+		params.Set("searchdomain", req.SearchDomain)
+	}
+	if strings.TrimSpace(req.Description) != "" {
+		params.Set("description", req.Description)
+	}
+	if req.Unprivileged != nil {
+		params.Set("unprivileged", proxmoxBoolFlag(*req.Unprivileged))
+	}
+	if req.Start != nil {
+		params.Set("start", proxmoxBoolFlag(*req.Start))
+	}
+	if req.Console != nil {
+		params.Set("console", proxmoxBoolFlag(*req.Console))
+	}
+	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api2/json/nodes/%s/lxc", url.PathEscape(node)), params, nil)
+}
+
+func (c *proxmoxClient) CloneVM(ctx context.Context, node string, templateVMID int, req proxmoxCloneRequest) error {
+	params := url.Values{}
+	params.Set("newid", strconv.Itoa(req.NewID))
+	if strings.TrimSpace(req.Name) != "" {
+		params.Set("name", req.Name)
+	}
+	if strings.TrimSpace(req.Storage) != "" {
+		params.Set("storage", req.Storage)
+	}
+	if strings.TrimSpace(req.Description) != "" {
+		params.Set("description", req.Description)
+	}
+	params.Set("full", proxmoxBoolFlag(req.FullClone))
+	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api2/json/nodes/%s/qemu/%d/clone", url.PathEscape(node), templateVMID), params, nil)
+}
+
+func (c *proxmoxClient) CreateVM(ctx context.Context, node string, vmid int, cfg *proxmoxQemuConfig) error {
+	params := cfg.toValues()
+	params.Set("vmid", strconv.Itoa(vmid))
+	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api2/json/nodes/%s/qemu", url.PathEscape(node)), params, nil)
+}
+
+func (c *proxmoxClient) UpdateVMConfig(ctx context.Context, node string, vmid int, cfg *proxmoxQemuConfig) error {
+	return c.do(ctx, http.MethodPut, fmt.Sprintf("/api2/json/nodes/%s/qemu/%d/config", url.PathEscape(node), vmid), cfg.toValues(), nil)
+}
+
+func (c *proxmoxClient) GetVMConfig(ctx context.Context, node string, vmid int) (*proxmoxVMConfigView, error) {
+	var raw map[string]any
+	if err := c.do(ctx, http.MethodGet, fmt.Sprintf("/api2/json/nodes/%s/qemu/%d/config", url.PathEscape(node), vmid), nil, &raw); err != nil {
+		return nil, err
+	}
+	view := &proxmoxVMConfigView{Raw: make(map[string]string, len(raw))}
+	for k, v := range raw {
+		view.Raw[k] = fmt.Sprintf("%v", v)
+	}
+	return view, nil
+}
+
+func (c *proxmoxClient) StartVM(ctx context.Context, node string, vmid int) (string, error) {
+	var upid string
+	if err := c.do(ctx, http.MethodPost, fmt.Sprintf("/api2/json/nodes/%s/qemu/%d/status/start", url.PathEscape(node), vmid), nil, &upid); err != nil {
+		return "", err
+	}
+	return upid, nil
+}
+
+func (c *proxmoxClient) TemplateVM(ctx context.Context, node string, vmid int) error {
+	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api2/json/nodes/%s/qemu/%d/template", url.PathEscape(node), vmid), nil, nil)
+}
+
+func (cfg *proxmoxQemuConfig) toValues() url.Values {
+	params := url.Values{}
+	if cfg == nil {
+		return params
+	}
+	if strings.TrimSpace(cfg.Name) != "" {
+		params.Set("name", cfg.Name)
+	}
+	if cfg.MemoryMB > 0 {
+		params.Set("memory", strconv.Itoa(cfg.MemoryMB))
+	}
+	if cfg.Sockets > 0 {
+		params.Set("sockets", strconv.Itoa(cfg.Sockets))
+	}
+	if cfg.Cores > 0 {
+		params.Set("cores", strconv.Itoa(cfg.Cores))
+	}
+	if strings.TrimSpace(cfg.Description) != "" {
+		params.Set("description", cfg.Description)
+	}
+	for k, v := range cfg.Raw {
+		if strings.TrimSpace(v) != "" {
+			params.Set(k, v)
+		}
+	}
+	return params
+}
+
+func proxmoxBoolFlag(value bool) string {
+	if value {
+		return "1"
+	}
+	return "0"
+}
