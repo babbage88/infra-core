@@ -8,12 +8,13 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.0.91
+	github.com/pkg/sftp v1.13.5
+	golang.org/x/term v0.32.0
 )
 
 require (
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pkg/sftp v1.13.5 // indirect
 )
 
 require (
@@ -25,12 +26,14 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/kevinburke/ssh_config v1.2.0
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/miekg/dns v1.1.66 // indirect
 	github.com/minio/crc64nvme v1.0.2 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/rs/xid v1.6.0 // indirect
+	github.com/skeema/knownhosts v1.3.1
 	golang.org/x/crypto v0.38.0
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.40.0 // indirect

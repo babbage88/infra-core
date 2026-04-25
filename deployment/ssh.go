@@ -4,11 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/babbage88/goph/v2"
-	cryptossh "golang.org/x/crypto/ssh"
+	coressh "github.com/babbage88/infra-core/ssh"
 )
 
 func PrepareSSHOptions(opts SSHOptions) (SSHOptions, func(), error) {
@@ -69,85 +68,17 @@ func PrepareSSHOptions(opts SSHOptions) (SSHOptions, func(), error) {
 }
 
 func InitializeSshClient(hostname, username, sshKey, sshPassphrase string, useAgent bool, port uint) (*goph.Client, error) {
-	if strings.TrimSpace(hostname) == "" {
-		return nil, fmt.Errorf("ssh host is required")
-	}
-	if strings.TrimSpace(username) == "" {
-		return nil, fmt.Errorf("ssh user is required")
-	}
-	if port == 0 {
-		port = 22
-	}
-
-	authMethods := make(goph.Auth, 0, 2)
-	if strings.TrimSpace(sshKey) != "" {
-		keyAuth, err := goph.Key(ExpandPath(sshKey), sshPassphrase)
-		if err != nil {
-			return nil, fmt.Errorf("load SSH key %q: %w", sshKey, err)
-		}
-		authMethods = append(authMethods, keyAuth...)
-	}
-
-	if useAgent || goph.HasAgent() {
-		agentAuth, err := goph.UseAgent()
-		if err == nil {
-			authMethods = append(authMethods, agentAuth...)
-		} else if useAgent && len(authMethods) == 0 {
-			return nil, fmt.Errorf("use ssh agent: %w", err)
-		}
-	}
-
-	if len(authMethods) == 0 {
-		for _, candidate := range []string{"~/.ssh/id_ed25519", "~/.ssh/id_rsa"} {
-			expanded := ExpandPath(candidate)
-			if info, err := os.Stat(expanded); err == nil && !info.IsDir() {
-				keyAuth, loadErr := goph.Key(expanded, sshPassphrase)
-				if loadErr != nil {
-					return nil, fmt.Errorf("load SSH key %q: %w", expanded, loadErr)
-				}
-				authMethods = append(authMethods, keyAuth...)
-				break
-			}
-		}
-	}
-
-	if len(authMethods) == 0 {
-		return nil, fmt.Errorf("no SSH authentication method configured; provide an ssh key or enable ssh-agent")
-	}
-
-	client, err := goph.NewConn(&goph.Config{
-		User:     username,
-		Addr:     hostname,
-		Port:     port,
-		Auth:     authMethods,
-		Timeout:  goph.DefaultTimeout,
-		Callback: cryptossh.InsecureIgnoreHostKey(),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("initialize ssh client: %w", err)
-	}
-	return client, nil
+	return coressh.InitializeSshClient(hostname, username, sshKey, sshPassphrase, useAgent, port)
 }
 
 func ExpandPath(path string) string {
-	if strings.HasPrefix(path, "~") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return path
-		}
-		return filepath.Join(home, strings.TrimPrefix(path, "~"))
-	}
-	return path
+	return coressh.ExpandPath(path)
 }
 
 func ShellQuote(s string) string {
-	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+	return coressh.ShellQuote(s)
 }
 
 func FormatExecError(err error, out []byte) error {
-	output := strings.TrimSpace(string(out))
-	if output == "" {
-		return fmt.Errorf("SSH execution failed: %w", err)
-	}
-	return fmt.Errorf("SSH execution failed: %w: %s", err, output)
+	return coressh.FormatExecError(err, out)
 }
