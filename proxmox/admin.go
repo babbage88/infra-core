@@ -11,18 +11,20 @@ import (
 
 	coredeploy "github.com/babbage88/infra-core/deployment"
 	coressh "github.com/babbage88/infra-core/ssh"
+	"github.com/google/uuid"
 )
 
 const DefaultManagerRoleName = "InfraCtlProxmoxManager"
 
 type CreatePVEUserRequest struct {
-	SSH      coredeploy.SSHOptions
-	Node     string
-	Username string
-	Realm    string
-	Comment  string
-	Password string
-	Force    bool
+	SSH          coredeploy.SSHOptions
+	HostServerID *uuid.UUID
+	Node         string
+	Username     string
+	Realm        string
+	Comment      string
+	Password     string
+	Force        bool
 }
 
 type CreatePVEUserResult struct {
@@ -35,22 +37,24 @@ type CreatePVEUserResult struct {
 }
 
 type CreateAPITokenRequest struct {
-	SSH            coredeploy.SSHOptions
-	Node           string
-	HostURL        string
-	UserID         string
-	Username       string
-	Realm          string
-	TokenID        string
-	Comment        string
-	Role           string
-	ACLPath        string
-	ExpirationDate string
-	DaysValid      int
-	Privsep        bool
-	Force          bool
-	Yolo           bool
-	Verify         *bool
+	SSH               coredeploy.SSHOptions
+	HostServerID      *uuid.UUID
+	Node              string
+	HostURL           string
+	UserID            string
+	Username          string
+	Realm             string
+	TokenID           string
+	Comment           string
+	Role              string
+	ACLPath           string
+	ExpirationDate    string
+	DaysValid         int
+	Privsep           bool
+	Force             bool
+	Yolo              bool
+	Verify            *bool
+	StoreAsUserSecret *bool
 }
 
 type CreateAPITokenResult struct {
@@ -72,6 +76,7 @@ type CreateAPITokenResult struct {
 	DirectChecks        []string
 	InferredChecks      []string
 	MissingCapabilities []string
+	StoredSecretID      *uuid.UUID
 }
 
 type createdToken struct {

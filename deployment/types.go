@@ -1,5 +1,7 @@
 package deployment
 
+import "github.com/google/uuid"
+
 type SSHOptions struct {
 	Host             string `json:"host,omitempty"`
 	User             string `json:"user,omitempty"`
@@ -228,9 +230,11 @@ type ProxmoxVM struct {
 }
 
 type ProxmoxVMListRequest struct {
-	Auth ProxmoxAuthOptions `json:"auth,omitempty"`
-	Node string             `json:"node,omitempty"`
-	Full *bool              `json:"full,omitempty"`
+	Auth            ProxmoxAuthOptions `json:"auth,omitempty"`
+	HostServerID    *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
+	Node            string             `json:"node,omitempty"`
+	Full            *bool              `json:"full,omitempty"`
 }
 
 type ProxmoxVMListResult struct {
@@ -239,9 +243,11 @@ type ProxmoxVMListResult struct {
 }
 
 type ProxmoxVMStartRequest struct {
-	Auth ProxmoxAuthOptions `json:"auth,omitempty"`
-	Node string             `json:"node,omitempty"`
-	VMID int                `json:"vmid,omitempty"`
+	Auth            ProxmoxAuthOptions `json:"auth,omitempty"`
+	HostServerID    *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
+	Node            string             `json:"node,omitempty"`
+	VMID            int                `json:"vmid,omitempty"`
 }
 
 type ProxmoxVMStartResult struct {
@@ -251,30 +257,32 @@ type ProxmoxVMStartResult struct {
 }
 
 type ProxmoxLXCRequest struct {
-	Auth          ProxmoxAuthOptions `json:"auth,omitempty"`
-	Node          string             `json:"node,omitempty"`
-	VMID          int                `json:"vmid,omitempty"`
-	Hostname      string             `json:"hostname,omitempty"`
-	Password      string             `json:"password,omitempty"`
-	OSTemplate    string             `json:"ostemplate,omitempty"`
-	SshPublicKeys []string           `json:"ssh_public_keys,omitempty"`
-	Storage       string             `json:"storage,omitempty"`
-	RootFSSize    string             `json:"rootfs_size,omitempty"`
-	Memory        int                `json:"memory,omitempty"`
-	Swap          int                `json:"swap,omitempty"`
-	Cores         int                `json:"cores,omitempty"`
-	CPULimit      int                `json:"cpu_limit,omitempty"`
-	CPUUnits      int                `json:"cpu_units,omitempty"`
-	Net0          string             `json:"net0,omitempty"`
-	Arch          string             `json:"arch,omitempty"`
-	Cmode         string             `json:"cmode,omitempty"`
-	Features      string             `json:"features,omitempty"`
-	Nameserver    string             `json:"nameserver,omitempty"`
-	SearchDomain  string             `json:"search_domain,omitempty"`
-	Description   string             `json:"description,omitempty"`
-	Unprivileged  *bool              `json:"unprivileged,omitempty"`
-	Start         *bool              `json:"start,omitempty"`
-	Console       *bool              `json:"console,omitempty"`
+	Auth            ProxmoxAuthOptions `json:"auth,omitempty"`
+	HostServerID    *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
+	Node            string             `json:"node,omitempty"`
+	VMID            int                `json:"vmid,omitempty"`
+	Hostname        string             `json:"hostname,omitempty"`
+	Password        string             `json:"password,omitempty"`
+	OSTemplate      string             `json:"ostemplate,omitempty"`
+	SshPublicKeys   []string           `json:"ssh_public_keys,omitempty"`
+	Storage         string             `json:"storage,omitempty"`
+	RootFSSize      string             `json:"rootfs_size,omitempty"`
+	Memory          int                `json:"memory,omitempty"`
+	Swap            int                `json:"swap,omitempty"`
+	Cores           int                `json:"cores,omitempty"`
+	CPULimit        int                `json:"cpu_limit,omitempty"`
+	CPUUnits        int                `json:"cpu_units,omitempty"`
+	Net0            string             `json:"net0,omitempty"`
+	Arch            string             `json:"arch,omitempty"`
+	Cmode           string             `json:"cmode,omitempty"`
+	Features        string             `json:"features,omitempty"`
+	Nameserver      string             `json:"nameserver,omitempty"`
+	SearchDomain    string             `json:"search_domain,omitempty"`
+	Description     string             `json:"description,omitempty"`
+	Unprivileged    *bool              `json:"unprivileged,omitempty"`
+	Start           *bool              `json:"start,omitempty"`
+	Console         *bool              `json:"console,omitempty"`
 }
 
 type ProxmoxLXCResult struct {
@@ -289,6 +297,8 @@ type ProxmoxLXCResult struct {
 type ProxmoxVMCreateRequest struct {
 	Auth              ProxmoxAuthOptions `json:"auth,omitempty"`
 	SSH               SSHOptions         `json:"ssh,omitempty"`
+	HostServerID      *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID   *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
 	Node              string             `json:"node,omitempty"`
 	VMID              int                `json:"vmid,omitempty"`
 	TemplateVMID      int                `json:"template_vmid,omitempty"`
@@ -322,6 +332,8 @@ type ProxmoxVMCreateResult struct {
 type ProxmoxVMTemplateRequest struct {
 	Auth             ProxmoxAuthOptions `json:"auth,omitempty"`
 	SSH              SSHOptions         `json:"ssh,omitempty"`
+	HostServerID     *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID  *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
 	Node             string             `json:"node,omitempty"`
 	VMID             int                `json:"vmid,omitempty"`
 	Name             string             `json:"name,omitempty"`
