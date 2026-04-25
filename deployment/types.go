@@ -127,6 +127,64 @@ type MariaDBInstallResult struct {
 	URI          string `json:"uri"`
 }
 
+type SystemdAppDeployRequest struct {
+	SSH               SSHOptions        `json:"ssh,omitempty"`
+	AppName           string            `json:"app_name,omitempty"`
+	EnvVars           map[string]string `json:"env_vars,omitempty"`
+	ServiceUser       string            `json:"service_user,omitempty"`
+	ServiceUID        int64             `json:"service_uid,omitempty"`
+	DestinationBinary string            `json:"destination_binary,omitempty"`
+	InstallDir        string            `json:"install_dir,omitempty"`
+	SystemdDir        string            `json:"systemd_dir,omitempty"`
+	SourceDir         string            `json:"source_dir,omitempty"`
+	SourceBin         string            `json:"source_bin,omitempty"`
+	SourceGoModule    string            `json:"source_go_module,omitempty"`
+	SourceRepo        string            `json:"source_repo,omitempty"`
+	SourceRef         string            `json:"source_ref,omitempty"`
+	SourcePackage     string            `json:"source_package,omitempty"`
+	SourceExcludes    []string          `json:"source_excludes,omitempty"`
+}
+
+type SystemdAppDeployResult struct {
+	Host         string `json:"host"`
+	AppName      string `json:"app_name"`
+	ServiceName  string `json:"service_name"`
+	ServiceUser  string `json:"service_user"`
+	InstallDir   string `json:"install_dir"`
+	BinaryPath   string `json:"binary_path"`
+	SystemdUnit  string `json:"systemd_unit"`
+	SourceBinary string `json:"source_binary,omitempty"`
+}
+
+type PostgresAppSetupRequest struct {
+	SSH                           SSHOptions `json:"ssh,omitempty"`
+	DatabaseName                  string     `json:"db_name,omitempty"`
+	Username                      string     `json:"username,omitempty"`
+	Password                      string     `json:"password,omitempty"`
+	SchemaName                    string     `json:"schema_name,omitempty"`
+	CreateDB                      *bool      `json:"create_db,omitempty"`
+	DropFirst                     *bool      `json:"drop_first,omitempty"`
+	PostgresUser                  string     `json:"postgres_user,omitempty"`
+	PostgresPassword              string     `json:"postgres_password,omitempty"`
+	PostgresHost                  string     `json:"postgres_host,omitempty"`
+	PostgresPort                  int        `json:"postgres_port,omitempty"`
+	PostgresConnDB                string     `json:"postgres_conn_db,omitempty"`
+	SetupRemotePostgres           *bool      `json:"setup_remote_postgres,omitempty"`
+	RemotePostgresHBACIDR         string     `json:"remote_postgres_hba_cidr,omitempty"`
+	RemotePostgresAuthMethod      string     `json:"remote_postgres_auth_method,omitempty"`
+	RemotePostgresListenAddresses string     `json:"remote_postgres_listen_addresses,omitempty"`
+}
+
+type PostgresAppSetupResult struct {
+	Host         string `json:"host"`
+	DatabaseName string `json:"db_name"`
+	Username     string `json:"username"`
+	SchemaName   string `json:"schema_name"`
+	PostgresHost string `json:"postgres_host"`
+	PostgresPort int    `json:"postgres_port"`
+	URI          string `json:"uri"`
+}
+
 type ProxmoxAuthOptions struct {
 	HostURL    string `json:"host_url,omitempty"`
 	APIToken   string `json:"api_token,omitempty"` // Format: user@realm!tokenid=secret.
@@ -190,4 +248,103 @@ type ProxmoxVMStartResult struct {
 	Node string `json:"node"`
 	VMID int    `json:"vmid"`
 	UPID string `json:"upid,omitempty"`
+}
+
+type ProxmoxLXCRequest struct {
+	Auth          ProxmoxAuthOptions `json:"auth,omitempty"`
+	Node          string             `json:"node,omitempty"`
+	VMID          int                `json:"vmid,omitempty"`
+	Hostname      string             `json:"hostname,omitempty"`
+	Password      string             `json:"password,omitempty"`
+	OSTemplate    string             `json:"ostemplate,omitempty"`
+	SshPublicKeys []string           `json:"ssh_public_keys,omitempty"`
+	Storage       string             `json:"storage,omitempty"`
+	RootFSSize    string             `json:"rootfs_size,omitempty"`
+	Memory        int                `json:"memory,omitempty"`
+	Swap          int                `json:"swap,omitempty"`
+	Cores         int                `json:"cores,omitempty"`
+	CPULimit      int                `json:"cpu_limit,omitempty"`
+	CPUUnits      int                `json:"cpu_units,omitempty"`
+	Net0          string             `json:"net0,omitempty"`
+	Arch          string             `json:"arch,omitempty"`
+	Cmode         string             `json:"cmode,omitempty"`
+	Features      string             `json:"features,omitempty"`
+	Nameserver    string             `json:"nameserver,omitempty"`
+	SearchDomain  string             `json:"search_domain,omitempty"`
+	Description   string             `json:"description,omitempty"`
+	Unprivileged  *bool              `json:"unprivileged,omitempty"`
+	Start         *bool              `json:"start,omitempty"`
+	Console       *bool              `json:"console,omitempty"`
+}
+
+type ProxmoxLXCResult struct {
+	Node     string `json:"node"`
+	VMID     int    `json:"vmid"`
+	Hostname string `json:"hostname"`
+	Status   string `json:"status"`
+	Started  bool   `json:"started"`
+	Console  bool   `json:"console"`
+}
+
+type ProxmoxVMCreateRequest struct {
+	Auth              ProxmoxAuthOptions `json:"auth,omitempty"`
+	SSH               SSHOptions         `json:"ssh,omitempty"`
+	Node              string             `json:"node,omitempty"`
+	VMID              int                `json:"vmid,omitempty"`
+	TemplateVMID      int                `json:"template_vmid,omitempty"`
+	Name              string             `json:"name,omitempty"`
+	MemoryMB          int                `json:"memory_mb,omitempty"`
+	Sockets           int                `json:"sockets,omitempty"`
+	Cores             int                `json:"cores,omitempty"`
+	Description       string             `json:"description,omitempty"`
+	Storage           string             `json:"storage,omitempty"`
+	FullClone         *bool              `json:"full_clone,omitempty"`
+	Start             *bool              `json:"start,omitempty"`
+	CIUser            string             `json:"ci_user,omitempty"`
+	CIPassword        string             `json:"ci_password,omitempty"`
+	SshPublicKeys     []string           `json:"ssh_public_keys,omitempty"`
+	IPConfig0         string             `json:"ipconfig0,omitempty"`
+	Nameserver        string             `json:"nameserver,omitempty"`
+	SearchDomain      string             `json:"search_domain,omitempty"`
+	CISnippetsStorage string             `json:"ci_snippets_storage,omitempty"`
+	CICustomScript    string             `json:"ci_custom_script,omitempty"`
+}
+
+type ProxmoxVMCreateResult struct {
+	Node         string `json:"node"`
+	VMID         int    `json:"vmid"`
+	TemplateVMID int    `json:"template_vmid"`
+	Name         string `json:"name"`
+	Status       string `json:"status"`
+	Started      bool   `json:"started"`
+}
+
+type ProxmoxVMTemplateRequest struct {
+	Auth             ProxmoxAuthOptions `json:"auth,omitempty"`
+	SSH              SSHOptions         `json:"ssh,omitempty"`
+	Node             string             `json:"node,omitempty"`
+	VMID             int                `json:"vmid,omitempty"`
+	Name             string             `json:"name,omitempty"`
+	ImageURL         string             `json:"image_url,omitempty"`
+	Storage          string             `json:"storage,omitempty"`
+	CloudInitStorage string             `json:"cloudinit_storage,omitempty"`
+	MemoryMB         int                `json:"memory_mb,omitempty"`
+	Sockets          int                `json:"sockets,omitempty"`
+	Cores            int                `json:"cores,omitempty"`
+	Description      string             `json:"description,omitempty"`
+	Net0             string             `json:"net0,omitempty"`
+	SCSIHW           string             `json:"scsihw,omitempty"`
+	DiskBus          string             `json:"disk_bus,omitempty"`
+	BootOrder        string             `json:"boot_order,omitempty"`
+	Agent            *bool              `json:"agent,omitempty"`
+	SerialConsole    *bool              `json:"serial_console,omitempty"`
+	CleanupImage     *bool              `json:"cleanup_image,omitempty"`
+}
+
+type ProxmoxVMTemplateResult struct {
+	Node             string `json:"node"`
+	VMID             int    `json:"vmid"`
+	Name             string `json:"name"`
+	ImportedVolumeID string `json:"imported_volume_id"`
+	Template         bool   `json:"template"`
 }
