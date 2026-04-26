@@ -19,7 +19,7 @@ func (c *Client) CreateQemuVNCProxy(ctx context.Context, node string, vmid int) 
 	form := url.Values{}
 	form.Set("websocket", "1")
 
-	var result ConsoleProxyResponse
+	var raw map[string]any
 	if err := c.do(
 		ctx,
 		http.MethodPost,
@@ -27,12 +27,12 @@ func (c *Client) CreateQemuVNCProxy(ctx context.Context, node string, vmid int) 
 		strings.NewReader(form.Encode()),
 		map[string]string{"Content-Type": "application/x-www-form-urlencoded"},
 		true,
-		&result,
+		&raw,
 	); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return consoleProxyResponseFromRaw(raw, "vncproxy")
 }
 
 func (c *Client) CreateLXCTermProxy(ctx context.Context, node string, vmid int) (*ConsoleProxyResponse, error) {
@@ -51,6 +51,10 @@ func (c *Client) CreateLXCTermProxy(ctx context.Context, node string, vmid int) 
 		return nil, err
 	}
 
+	return consoleProxyResponseFromRaw(raw, "termproxy")
+}
+
+func consoleProxyResponseFromRaw(raw map[string]any, proxyType string) (*ConsoleProxyResponse, error) {
 	result := &ConsoleProxyResponse{}
 	if port, err := consolePortFromValue(raw["port"]); err == nil {
 		result.Port = port
@@ -62,10 +66,10 @@ func (c *Client) CreateLXCTermProxy(ctx context.Context, node string, vmid int) 
 		result.User = user
 	}
 	if result.Port <= 0 {
-		return nil, fmt.Errorf("termproxy response missing port")
+		return nil, fmt.Errorf("%s response missing port", proxyType)
 	}
 	if strings.TrimSpace(result.Ticket) == "" {
-		return nil, fmt.Errorf("termproxy response missing ticket")
+		return nil, fmt.Errorf("%s response missing ticket", proxyType)
 	}
 	return result, nil
 }
