@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const apiRootPath string = "/api2/json"
@@ -249,4 +251,38 @@ func (c *Client) do(ctx context.Context, method, path string, body io.Reader, he
 	}
 
 	return nil
+}
+
+func (c *Client) AuthHeaders(ctx context.Context, csrf bool) (http.Header, error) {
+	if c.authMethod != AuthToken {
+		if err := c.Login(ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	headers := http.Header{}
+	if c.authMethod == AuthToken {
+		headers.Set("Authorization", "PVEAPIToken="+c.username+"="+c.password)
+		return headers, nil
+	}
+
+	c.authMu.RLock()
+	defer c.authMu.RUnlock()
+	if csrf && c.csrfToken != "" {
+		headers.Set("CSRFPreventionToken", c.csrfToken)
+	}
+	if c.authCookie != nil {
+		headers.Set("Cookie", c.authCookie.String())
+	} else if c.authTicket != "" {
+		headers.Set("Cookie", "PVEAuthCookie="+c.authTicket)
+	}
+	return headers, nil
+}
+
+func (c *Client) WebsocketDialer() *websocket.Dialer {
+	dialer := websocket.Dialer{}
+	if transport, ok := c.httpClient.Transport.(*http.Transport); ok && transport.TLSClientConfig != nil {
+		dialer.TLSClientConfig = transport.TLSClientConfig.Clone()
+	}
+	return &dialer
 }
