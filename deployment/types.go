@@ -1,6 +1,10 @@
 package deployment
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 type SSHOptions struct {
 	Host             string `json:"host,omitempty"`
@@ -214,12 +218,12 @@ type ProxmoxVM struct {
 	DiskWrite       int     `json:"diskwrite,omitempty"`
 	Node            string  `json:"node,omitempty"`
 	PID             int     `json:"pid,omitempty"`
-	PressureCPUFull int     `json:"pressurecpufull,omitempty"`
-	PressureCPUSome int     `json:"pressurecpusome,omitempty"`
-	PressureIOFull  int     `json:"pressureiofull,omitempty"`
-	PressureIOSome  int     `json:"pressureiosome,omitempty"`
-	PressureMemFull int     `json:"pressurememoryfull,omitempty"`
-	PressureMemSome int     `json:"pressurememorysome,omitempty"`
+	PressureCPUFull float64 `json:"pressurecpufull,omitempty"`
+	PressureCPUSome float64 `json:"pressurecpusome,omitempty"`
+	PressureIOFull  float64 `json:"pressureiofull,omitempty"`
+	PressureIOSome  float64 `json:"pressureiosome,omitempty"`
+	PressureMemFull float64 `json:"pressurememoryfull,omitempty"`
+	PressureMemSome float64 `json:"pressurememorysome,omitempty"`
 	QMStatus        string  `json:"qmstatus,omitempty"`
 	RunningMachine  string  `json:"running-machine,omitempty"`
 	RunningQemu     string  `json:"running-qemu,omitempty"`
@@ -235,6 +239,15 @@ type ProxmoxVMListRequest struct {
 	ProxmoxSecretID *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
 	Node            string             `json:"node,omitempty"`
 	Full            *bool              `json:"full,omitempty"`
+}
+
+func (proxmoxReq *ProxmoxVMListRequest) DeriveProxmoxHostUrlFromHostname() error {
+	if proxmoxReq.Auth.HostURL != "" {
+		return fmt.Errorf("Pve HostURL already defined: %s", proxmoxReq.Auth.HostURL)
+	} else {
+		proxmoxReq.Auth.HostURL = fmt.Sprintf("https://%s:8006", proxmoxReq.Node)
+	}
+	return nil
 }
 
 type ProxmoxVMListResult struct {

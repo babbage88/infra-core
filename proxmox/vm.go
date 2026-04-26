@@ -140,17 +140,17 @@ func (c *Client) GetVMConfig(ctx context.Context, node string, vmid int) (*Proxm
 	return cfg, nil
 }
 
-func (c *Client) StartVM(ctx context.Context, node string, vmid int) (map[string]any, error) {
+func (c *Client) StartVM(ctx context.Context, node string, vmid int) (string, error) {
 	path := fmt.Sprintf("%s/%s/qemu/%d%s", apiNodesPath, url.PathEscape(node), vmid, apiVmStartSubPath)
 
-	var resp map[string]any
+	var upid string
 
 	slog.Info("Sending http client POST to start vm", slog.String("node", node), slog.Int("vmid", vmid), slog.String("path", path))
-	if err := c.do(ctx, http.MethodPost, path, nil, nil, false, &resp); err != nil {
-		return nil, err
+	if err := c.do(ctx, http.MethodPost, path, nil, nil, false, &upid); err != nil {
+		return "", err
 	}
 
-	return resp, nil
+	return upid, nil
 }
 
 func (c *Client) TemplateVM(ctx context.Context, node string, vmid int) error {
@@ -165,17 +165,17 @@ func (c *Client) TemplateVM(ctx context.Context, node string, vmid int) error {
 	return c.do(ctx, http.MethodPost, path, nil, nil, true, nil)
 }
 
-func (c *Client) StopVM(ctx context.Context, node string, vmid int) (map[string]any, error) {
+func (c *Client) StopVM(ctx context.Context, node string, vmid int) (string, error) {
 	path := fmt.Sprintf("%s/%s/qemu/%d%s", apiNodesPath, url.PathEscape(node), vmid, apiVmStopSubPath)
 
-	var resp map[string]any
+	var upid string
 
 	slog.Info("Sending http client POST to stop vm", slog.String("node", node), slog.Int("vmid", vmid), slog.String("path", path))
-	if err := c.do(ctx, http.MethodPost, path, nil, nil, false, &resp); err != nil {
-		return nil, err
+	if err := c.do(ctx, http.MethodPost, path, nil, nil, false, &upid); err != nil {
+		return "", err
 	}
 
-	return resp, nil
+	return upid, nil
 }
 
 func (cfg *ProxmoxQemuVmConfig) PrintJSON() error {

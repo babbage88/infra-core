@@ -131,6 +131,28 @@ func (c *Client) ListLxcContainers(ctx context.Context, node string) ([]LxcConta
 	return containers, nil
 }
 
+func (c *Client) StartLXCContainer(ctx context.Context, node string, vmid int) (string, error) {
+	path := fmt.Sprintf("%s/%s/lxc/%d%s", apiNodesPath, url.PathEscape(node), vmid, apiVmStartSubPath)
+
+	var upid string
+	if err := c.do(ctx, http.MethodPost, path, nil, nil, false, &upid); err != nil {
+		return "", err
+	}
+
+	return upid, nil
+}
+
+func (c *Client) StopLXCContainer(ctx context.Context, node string, vmid int) (string, error) {
+	path := fmt.Sprintf("%s/%s/lxc/%d%s", apiNodesPath, url.PathEscape(node), vmid, apiVmStopSubPath)
+
+	var upid string
+	if err := c.do(ctx, http.MethodPost, path, nil, nil, false, &upid); err != nil {
+		return "", err
+	}
+
+	return upid, nil
+}
+
 func (l *LxcContainer) ParseSshPublicKeySlice() (string, error) {
 	var sshKeysParam strings.Builder
 

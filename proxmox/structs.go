@@ -24,12 +24,12 @@ type QemuVm struct {
 	DiskWrite         int     `json:"diskwrite,omitempty"`
 	Node              string  `json:"node,omitempty"`
 	PID               int     `json:"pid,omitempty"`
-	PresureCpuFull    int     `json:"pressurecpufull,omitempty"`
-	PresureCpuSome    int     `json:"pressurecpusome,omitempty"`
-	PresureIoFull     int     `json:"pressureiofull,omitempty"`
-	PresureIoSome     int     `json:"pressureiosome,omitempty"`
-	PresureMemoryFull int     `json:"pressurememoryfull,omitempty"`
-	PresureMemorySome int     `json:"pressurememorysome,omitempty"`
+	PresureCpuFull    float64 `json:"pressurecpufull,omitempty"`
+	PresureCpuSome    float64 `json:"pressurecpusome,omitempty"`
+	PresureIoFull     float64 `json:"pressureiofull,omitempty"`
+	PresureIoSome     float64 `json:"pressureiosome,omitempty"`
+	PresureMemoryFull float64 `json:"pressurememoryfull,omitempty"`
+	PresureMemorySome float64 `json:"pressurememorysome,omitempty"`
 	QmStatus          string  `json:"qmstatus,omitempty"`
 	RunningMachine    string  `json:"running-machine,omitempty"`
 	RunningQemu       string  `json:"running-qemu,omitempty"`
