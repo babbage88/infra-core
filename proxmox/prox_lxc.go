@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -151,6 +152,82 @@ func (c *Client) StopLXCContainer(ctx context.Context, node string, vmid int) (s
 	}
 
 	return upid, nil
+}
+
+func (c *Client) DeleteLXCContainer(ctx context.Context, node string, vmid int) (string, error) {
+	path := fmt.Sprintf("%s/%s/lxc/%d", apiNodesPath, url.PathEscape(node), vmid)
+
+	var upid string
+	if err := c.do(ctx, http.MethodDelete, path, nil, nil, true, &upid); err != nil {
+		return "", err
+	}
+
+	return upid, nil
+}
+
+func (c *Client) GetLXCConfig(ctx context.Context, node string, vmid int) (map[string]string, error) {
+	path := fmt.Sprintf("%s/%s/lxc/%d/config", apiNodesPath, url.PathEscape(node), vmid)
+
+	var raw map[string]any
+	if err := c.do(ctx, http.MethodGet, path, nil, nil, false, &raw); err != nil {
+		return nil, err
+	}
+
+	cfg := make(map[string]string, len(raw))
+	for k, v := range raw {
+		cfg[k] = fmt.Sprintf("%v", v)
+	}
+	return cfg, nil
+}
+
+func (c *Client) UpdateLXCConfig(ctx context.Context, node string, vmid int, params map[string]string) error {
+	form := url.Values{}
+	for key, value := range params {
+		if strings.TrimSpace(value) != "" {
+			form.Set(key, value)
+		}
+	}
+
+	path := fmt.Sprintf("%s/%s/lxc/%d/config", apiNodesPath, url.PathEscape(node), vmid)
+	headers := map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded",
+	}
+
+	return c.do(ctx, http.MethodPut, path, strings.NewReader(form.Encode()), headers, true, nil)
+}
+
+func ParseLXCConfig(raw map[string]string, vmid int) *LxcContainer {
+	cfg := &LxcContainer{
+		VmId: vmid,
+	}
+
+	for k, v := range raw {
+		switch k {
+		case "hostname":
+			cfg.Hostname = v
+		case "memory":
+			if parsed, err := strconv.Atoi(v); err == nil {
+				cfg.Memory = parsed
+			}
+		case "swap":
+			if parsed, err := strconv.Atoi(v); err == nil {
+				cfg.Swap = parsed
+			}
+		case "cores":
+			if parsed, err := strconv.Atoi(v); err == nil {
+				cfg.Cores = parsed
+			}
+		case "net0":
+			cfg.Net0 = v
+		case "rootfs":
+			cfg.RootFsSize = v
+			if idx := strings.Index(v, ":"); idx >= 0 {
+				cfg.Storage = v[:idx]
+			}
+		}
+	}
+
+	return cfg
 }
 
 func (l *LxcContainer) ParseSshPublicKeySlice() (string, error) {

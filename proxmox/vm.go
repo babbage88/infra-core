@@ -178,6 +178,38 @@ func (c *Client) StopVM(ctx context.Context, node string, vmid int) (string, err
 	return upid, nil
 }
 
+func (c *Client) DeleteVM(ctx context.Context, node string, vmid int) (string, error) {
+	path := fmt.Sprintf("%s/%s/qemu/%d", apiNodesPath, url.PathEscape(node), vmid)
+
+	var upid string
+
+	slog.Info("Sending http client DELETE to remove vm", slog.String("node", node), slog.Int("vmid", vmid), slog.String("path", path))
+	if err := c.do(ctx, http.MethodDelete, path, nil, nil, true, &upid); err != nil {
+		return "", err
+	}
+
+	return upid, nil
+}
+
+func (c *Client) ResizeVMDisk(ctx context.Context, node string, vmid int, disk, size string) (string, error) {
+	path := fmt.Sprintf("%s/%s/qemu/%d/resize", apiNodesPath, url.PathEscape(node), vmid)
+
+	form := url.Values{}
+	form.Set("disk", disk)
+	form.Set("size", size)
+
+	var upid string
+	headers := map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded",
+	}
+
+	if err := c.do(ctx, http.MethodPut, path, strings.NewReader(form.Encode()), headers, true, &upid); err != nil {
+		return "", err
+	}
+
+	return upid, nil
+}
+
 func (cfg *ProxmoxQemuVmConfig) PrintJSON() error {
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {

@@ -269,6 +269,65 @@ type ProxmoxVMStartResult struct {
 	UPID string `json:"upid,omitempty"`
 }
 
+type ProxmoxVMHardwareResult struct {
+	Node          string            `json:"node"`
+	VMID          int               `json:"vmid"`
+	Name          string            `json:"name,omitempty"`
+	MemoryMB      int               `json:"memory_mb,omitempty"`
+	Sockets       int               `json:"sockets,omitempty"`
+	Cores         int               `json:"cores,omitempty"`
+	Bridge        string            `json:"bridge,omitempty"`
+	VLANTag       string            `json:"vlan_tag,omitempty"`
+	NICModel      string            `json:"nic_model,omitempty"`
+	MACAddress    string            `json:"mac_address,omitempty"`
+	DiskInterface string            `json:"disk_interface,omitempty"`
+	DiskSize      string            `json:"disk_size,omitempty"`
+	Raw           map[string]string `json:"raw,omitempty"`
+}
+
+type ProxmoxVMHardwareUpdateRequest struct {
+	Auth            ProxmoxAuthOptions `json:"auth,omitempty"`
+	HostServerID    *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
+	Node            string             `json:"node,omitempty"`
+	VMID            int                `json:"vmid,omitempty"`
+	MemoryMB        *int               `json:"memory_mb,omitempty"`
+	Sockets         *int               `json:"sockets,omitempty"`
+	Cores           *int               `json:"cores,omitempty"`
+	Bridge          *string            `json:"bridge,omitempty"`
+	VLANTag         *string            `json:"vlan_tag,omitempty"`
+	DiskSizeGB      *int               `json:"disk_size_gb,omitempty"`
+}
+
+type ProxmoxLXCResourcesResult struct {
+	Node       string            `json:"node"`
+	VMID       int               `json:"vmid"`
+	Hostname   string            `json:"hostname,omitempty"`
+	MemoryMB   int               `json:"memory_mb,omitempty"`
+	SwapMB     int               `json:"swap_mb,omitempty"`
+	Cores      int               `json:"cores,omitempty"`
+	Bridge     string            `json:"bridge,omitempty"`
+	VLANTag    string            `json:"vlan_tag,omitempty"`
+	RootFS     string            `json:"rootfs,omitempty"`
+	RootFSSize string            `json:"rootfs_size,omitempty"`
+	Storage    string            `json:"storage,omitempty"`
+	Raw        map[string]string `json:"raw,omitempty"`
+}
+
+type ProxmoxLXCResourcesUpdateRequest struct {
+	Auth            ProxmoxAuthOptions `json:"auth,omitempty"`
+	HostServerID    *uuid.UUID         `json:"host_server_id,omitempty"`
+	ProxmoxSecretID *uuid.UUID         `json:"proxmox_secret_id,omitempty"`
+	Node            string             `json:"node,omitempty"`
+	VMID            int                `json:"vmid,omitempty"`
+	MemoryMB        *int               `json:"memory_mb,omitempty"`
+	SwapMB          *int               `json:"swap_mb,omitempty"`
+	Cores           *int               `json:"cores,omitempty"`
+	Bridge          *string            `json:"bridge,omitempty"`
+	VLANTag         *string            `json:"vlan_tag,omitempty"`
+	RootFSSizeGB    *int               `json:"rootfs_size_gb,omitempty"`
+}
+
 type ProxmoxLXCRequest struct {
 	Auth            ProxmoxAuthOptions `json:"auth,omitempty"`
 	HostServerID    *uuid.UUID         `json:"host_server_id,omitempty"`
