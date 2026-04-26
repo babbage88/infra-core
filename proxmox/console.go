@@ -35,8 +35,12 @@ func (c *Client) CreateQemuVNCProxy(ctx context.Context, node string, vmid int) 
 	return consoleProxyResponseFromRaw(raw, "vncproxy")
 }
 
-func (c *Client) CreateLXCTermProxy(ctx context.Context, node string, vmid int) (*ConsoleProxyResponse, error) {
+func (c *Client) CreateLXCTermProxy(ctx context.Context, node string, vmid int, referer string) (*ConsoleProxyResponse, error) {
 	form := url.Values{}
+	headers := map[string]string{"Content-Type": "application/x-www-form-urlencoded"}
+	if strings.TrimSpace(referer) != "" {
+		headers["Referer"] = referer
+	}
 
 	var raw map[string]any
 	if err := c.do(
@@ -44,7 +48,7 @@ func (c *Client) CreateLXCTermProxy(ctx context.Context, node string, vmid int) 
 		http.MethodPost,
 		fmt.Sprintf("%s/%s/lxc/%d/termproxy", apiNodesPath, url.PathEscape(node), vmid),
 		strings.NewReader(form.Encode()),
-		map[string]string{"Content-Type": "application/x-www-form-urlencoded"},
+		headers,
 		true,
 		&raw,
 	); err != nil {
