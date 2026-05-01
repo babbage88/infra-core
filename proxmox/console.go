@@ -10,13 +10,15 @@ import (
 )
 
 type ConsoleProxyResponse struct {
-	Port   int    `json:"port"`
-	Ticket string `json:"ticket"`
-	User   string `json:"user,omitempty"`
+	Port     int    `json:"port"`
+	Ticket   string `json:"ticket"`
+	User     string `json:"user,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 func (c *Client) CreateQemuVNCProxy(ctx context.Context, node string, vmid int) (*ConsoleProxyResponse, error) {
 	form := url.Values{}
+	form.Set("generate-password", "1")
 	form.Set("websocket", "1")
 
 	var raw map[string]any
@@ -68,6 +70,9 @@ func consoleProxyResponseFromRaw(raw map[string]any, proxyType string) (*Console
 	}
 	if user, ok := raw["user"].(string); ok {
 		result.User = user
+	}
+	if password, ok := raw["password"].(string); ok {
+		result.Password = password
 	}
 	if result.Port <= 0 {
 		return nil, fmt.Errorf("%s response missing port", proxyType)
