@@ -16,8 +16,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const apiRootPath string = "/api2/json"
-const apiClusterResourcesPath string = "/api2/json/cluster/resources"
+// const apiRootPath string = "/api2/json"
+// const apiClusterResourcesPath string = "/api2/json/cluster/resources"
 const apiNodesPath string = "/api2/json/nodes"
 const apiVmStartSubPath string = "/status/start"
 const apiVmStopSubPath string = "/status/stop"
