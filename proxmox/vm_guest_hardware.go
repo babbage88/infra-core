@@ -22,15 +22,15 @@ type GuestNetworkInterface struct {
 }
 
 type NodeNetworkInterface struct {
-	Iface    string `json:"iface"`
-	Type     string `json:"type,omitempty"`
-	Active   int    `json:"active,omitempty"`
-	Autostart int   `json:"autostart,omitempty"`
+	Iface       string `json:"iface"`
+	Type        string `json:"type,omitempty"`
+	Active      int    `json:"active,omitempty"`
+	Autostart   int    `json:"autostart,omitempty"`
 	BridgePorts string `json:"bridge_ports,omitempty"`
-	CIDR     string `json:"cidr,omitempty"`
-	Gateway  string `json:"gateway,omitempty"`
-	Method   string `json:"method,omitempty"`
-	Method6  string `json:"method6,omitempty"`
+	CIDR        string `json:"cidr,omitempty"`
+	Gateway     string `json:"gateway,omitempty"`
+	Method      string `json:"method,omitempty"`
+	Method6     string `json:"method6,omitempty"`
 }
 
 func (c *Client) GetQemuAgentNetworkInterfaces(ctx context.Context, node string, vmid int) ([]GuestNetworkInterface, error) {
@@ -82,4 +82,3 @@ func (c *Client) UpdateVMConfigRaw(ctx context.Context, node string, vmid int, p
 	headers := map[string]string{"Content-Type": "application/x-www-form-urlencoded"}
 	return c.do(ctx, http.MethodPut, path, strings.NewReader(params.Encode()), headers, true, nil)
 }
-
