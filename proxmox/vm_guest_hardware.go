@@ -33,13 +33,18 @@ type NodeNetworkInterface struct {
 	Method6     string `json:"method6,omitempty"`
 }
 
+type qemuAgentNetworkGetInterfacesResponse struct {
+	Result []GuestNetworkInterface `json:"result"`
+}
+
 func (c *Client) GetQemuAgentNetworkInterfaces(ctx context.Context, node string, vmid int) ([]GuestNetworkInterface, error) {
 	path := fmt.Sprintf("%s/%s/qemu/%d/agent/network-get-interfaces", apiNodesPath, url.PathEscape(node), vmid)
-	var interfaces []GuestNetworkInterface
-	if err := c.do(ctx, http.MethodGet, path, nil, nil, false, &interfaces); err != nil {
+	var resp qemuAgentNetworkGetInterfacesResponse
+	if err := c.do(ctx, http.MethodGet, path, nil, nil, false, &resp); err != nil {
 		return nil, err
 	}
-	return interfaces, nil
+
+	return resp.Result, nil
 }
 
 func (c *Client) GetLXCInterfaces(ctx context.Context, node string, vmid int) ([]GuestNetworkInterface, error) {
