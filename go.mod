@@ -6,6 +6,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.116.0
 	github.com/go-acme/lego/v4 v4.35.2
 	github.com/goccy/go-yaml v1.19.2
+	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.0.100
 	github.com/pkg/sftp v1.13.10

@@ -9,9 +9,9 @@ import (
 )
 
 type GuestNetworkIPAddress struct {
-	IPAddress     string `json:"ip-address"`
-	IPAddressType string `json:"ip-address-type,omitempty"`
-	Prefix        int    `json:"prefix,omitempty"`
+	IPAddress     string  `json:"ip-address"`
+	IPAddressType string  `json:"ip-address-type,omitempty"`
+	Prefix        JsonInt `json:"prefix,omitempty"`
 }
 
 type GuestNetworkInterface struct {
