@@ -286,6 +286,40 @@ func buildProxmoxVMCloudInitConfig(req ProxmoxVMCreateRequest) (*proxmoxQemuConf
 	if len(req.SshPublicKeys) > 0 {
 		cfg.Raw["sshkeys"] = strings.Join(req.SshPublicKeys, "\n")
 	}
+	if req.BallooningDevice != nil {
+		if !*req.BallooningDevice {
+			cfg.Raw["balloon"] = "0"
+		} else if req.MinimumMemoryMB > 0 {
+			cfg.Raw["balloon"] = strconv.Itoa(req.MinimumMemoryMB)
+		}
+	} else if req.MinimumMemoryMB > 0 {
+		cfg.Raw["balloon"] = strconv.Itoa(req.MinimumMemoryMB)
+	}
+	if req.Shares > 0 {
+		cfg.Raw["shares"] = strconv.Itoa(req.Shares)
+	}
+	if strings.TrimSpace(req.Bios) != "" {
+		cfg.Raw["bios"] = req.Bios
+	}
+	if strings.TrimSpace(req.Machine) != "" {
+		cfg.Raw["machine"] = req.Machine
+	}
+	if strings.TrimSpace(req.SCSIHW) != "" {
+		cfg.Raw["scsihw"] = req.SCSIHW
+	}
+	if strings.TrimSpace(req.Boot) != "" {
+		cfg.Raw["boot"] = req.Boot
+	}
+	if req.AgentEnabled != nil {
+		if *req.AgentEnabled {
+			cfg.Raw["agent"] = "enabled=1"
+		} else {
+			cfg.Raw["agent"] = "0"
+		}
+	}
+	if strings.TrimSpace(req.Net0) != "" {
+		cfg.Raw["net0"] = req.Net0
+	}
 	if strings.TrimSpace(req.IPConfig0) != "" {
 		cfg.Raw["ipconfig0"] = req.IPConfig0
 	}

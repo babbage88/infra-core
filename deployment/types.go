@@ -376,6 +376,9 @@ type ProxmoxVMCreateRequest struct {
 	TemplateVMID      int                `json:"template_vmid,omitempty"`
 	Name              string             `json:"name,omitempty"`
 	MemoryMB          int                `json:"memory_mb,omitempty"`
+	MinimumMemoryMB   int                `json:"minimum_memory_mb,omitempty"`
+	BallooningDevice  *bool              `json:"ballooning_device,omitempty"`
+	Shares            int                `json:"shares,omitempty"`
 	Sockets           int                `json:"sockets,omitempty"`
 	Cores             int                `json:"cores,omitempty"`
 	Description       string             `json:"description,omitempty"`
@@ -385,6 +388,12 @@ type ProxmoxVMCreateRequest struct {
 	CIUser            string             `json:"ci_user,omitempty"`
 	CIPassword        string             `json:"ci_password,omitempty"`
 	SshPublicKeys     []string           `json:"ssh_public_keys,omitempty"`
+	Bios              string             `json:"bios,omitempty"`
+	Machine           string             `json:"machine,omitempty"`
+	SCSIHW            string             `json:"scsihw,omitempty"`
+	Boot              string             `json:"boot,omitempty"`
+	AgentEnabled      *bool              `json:"agent_enabled,omitempty"`
+	Net0              string             `json:"net0,omitempty"`
 	IPConfig0         string             `json:"ipconfig0,omitempty"`
 	Nameserver        string             `json:"nameserver,omitempty"`
 	SearchDomain      string             `json:"search_domain,omitempty"`
