@@ -149,7 +149,10 @@ func CreateProxmoxVM(req ProxmoxVMCreateRequest) (ProxmoxVMCreateResult, error) 
 	}
 	if hasProxmoxVMConfigValues(cloudInitConfig) {
 		if err := client.UpdateVMConfig(ctx, req.Node, req.VMID, cloudInitConfig); err != nil {
-			return ProxmoxVMCreateResult{}, fmt.Errorf("apply VM config: %w", err)
+			if _, cleanupErr := client.DeleteVM(ctx, req.Node, req.VMID); cleanupErr != nil {
+				return ProxmoxVMCreateResult{}, fmt.Errorf("apply VM config: %w (VM %d was cloned but automatic cleanup failed: %v)", err, req.VMID, cleanupErr)
+			}
+			return ProxmoxVMCreateResult{}, fmt.Errorf("apply VM config: %w (VM %d clone was rolled back after config failure)", err, req.VMID)
 		}
 	}
 	if boolValue(req.Start) {
@@ -290,7 +293,7 @@ func buildProxmoxVMCloudInitConfig(req ProxmoxVMCreateRequest) (*proxmoxQemuConf
 		cfg.Raw["cipassword"] = req.CIPassword
 	}
 	if len(req.SshPublicKeys) > 0 {
-		cfg.Raw["sshkeys"] = url.PathEscape(strings.Join(req.SshPublicKeys, "\n"))
+		cfg.Raw["sshkeys"] = proxmoxEscapeCloudInitSSHKeys(strings.Join(req.SshPublicKeys, "\n"))
 	}
 	if req.BallooningDevice != nil {
 		if !*req.BallooningDevice {
@@ -339,6 +342,26 @@ func buildProxmoxVMCloudInitConfig(req ProxmoxVMCreateRequest) (*proxmoxQemuConf
 		cfg.Raw = nil
 	}
 	return cfg, nil
+}
+
+func proxmoxEscapeCloudInitSSHKeys(keys string) string {
+	keys = strings.TrimSpace(keys)
+	if keys == "" {
+		return ""
+	}
+
+	// Normalize line endings because Proxmox expects keys separated by LF.
+	keys = strings.ReplaceAll(keys, "\r\n", "\n")
+	keys = strings.ReplaceAll(keys, "\r", "\n")
+
+	// Proxmox QEMU sshkeys expects the field value to already be URL-escaped.
+	// Then application/x-www-form-urlencoded encoding escapes the % signs again.
+	//
+	// url.QueryEscape is close, but it encodes spaces as '+'. Proxmox wants %20.
+	escaped := url.QueryEscape(keys)
+	escaped = strings.ReplaceAll(escaped, "+", "%20")
+
+	return escaped
 }
 
 func buildProxmoxVMCloudImageBaseConfig(req ProxmoxVMTemplateRequest) *proxmoxQemuConfig {
@@ -776,6 +799,14 @@ func (c *proxmoxClient) GetVMConfig(ctx context.Context, node string, vmid int) 
 		view.Raw[k] = fmt.Sprintf("%v", v)
 	}
 	return view, nil
+}
+
+func (c *proxmoxClient) DeleteVM(ctx context.Context, node string, vmid int) (string, error) {
+	var upid string
+	if err := c.do(ctx, http.MethodDelete, fmt.Sprintf("/api2/json/nodes/%s/qemu/%d", url.PathEscape(node), vmid), nil, &upid); err != nil {
+		return "", err
+	}
+	return upid, nil
 }
 
 func (c *proxmoxClient) StartVM(ctx context.Context, node string, vmid int) (string, error) {
