@@ -1,3 +1,11 @@
+// infractl:name=infra-core
+// infractl:description=Shared deployment and infrastructure automation primitives used by registerable user applications.
+// infractl:repository_url=https://github.com/babbage88/infra-core
+// infractl:manifest_path=go.mod
+// infractl:deploy_kind=library
+// infractl:package_manager=go
+// infractl:registerable=false
+// infractl:build_config={"role":"support-library"}
 module github.com/babbage88/infra-core
 
 go 1.26.2
