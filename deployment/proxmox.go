@@ -290,7 +290,7 @@ func buildProxmoxVMCloudInitConfig(req ProxmoxVMCreateRequest) (*proxmoxQemuConf
 		cfg.Raw["cipassword"] = req.CIPassword
 	}
 	if len(req.SshPublicKeys) > 0 {
-		cfg.Raw["sshkeys"] = url.QueryEscape(strings.Join(req.SshPublicKeys, "\n"))
+		cfg.Raw["sshkeys"] = strings.Join(req.SshPublicKeys, "\n")
 	}
 	if req.BallooningDevice != nil {
 		if !*req.BallooningDevice {
