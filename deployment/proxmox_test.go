@@ -115,7 +115,7 @@ func TestCreateProxmoxVMEncodesSSHKeysForCloudInit(t *testing.T) {
 		t.Fatalf("CreateProxmoxVM returned error: %v", err)
 	}
 
-	wantEncodedKeys := url.QueryEscape(strings.Join([]string{
+	wantEncodedKeys := url.PathEscape(strings.Join([]string{
 		"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITestKeyOne user@example.com",
 		"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITestKeyTwo user2@example.com",
 	}, "\n"))
