@@ -97,9 +97,6 @@ func CreateProxmoxVM(req ProxmoxVMCreateRequest) (ProxmoxVMCreateResult, error) 
 	if strings.TrimSpace(req.Node) == "" {
 		return ProxmoxVMCreateResult{}, fmt.Errorf("node is required")
 	}
-	if req.VMID <= 0 {
-		return ProxmoxVMCreateResult{}, fmt.Errorf("vmid must be greater than zero")
-	}
 	if req.TemplateVMID <= 0 {
 		return ProxmoxVMCreateResult{}, fmt.Errorf("template_vmid must be greater than zero")
 	}
@@ -112,6 +109,12 @@ func CreateProxmoxVM(req ProxmoxVMCreateRequest) (ProxmoxVMCreateResult, error) 
 		return ProxmoxVMCreateResult{}, err
 	}
 	ctx := context.Background()
+	if req.VMID <= 0 {
+		req.VMID, err = client.NextVMID(ctx)
+		if err != nil {
+			return ProxmoxVMCreateResult{}, fmt.Errorf("allocate proxmox VMID: %w", err)
+		}
+	}
 
 	cloudInitConfig, err := buildProxmoxVMCloudInitConfig(req)
 	if err != nil {
@@ -169,9 +172,6 @@ func CreateProxmoxVMTemplate(req ProxmoxVMTemplateRequest) (ProxmoxVMTemplateRes
 	if strings.TrimSpace(req.Node) == "" {
 		return ProxmoxVMTemplateResult{}, fmt.Errorf("node is required")
 	}
-	if req.VMID <= 0 {
-		return ProxmoxVMTemplateResult{}, fmt.Errorf("vmid must be greater than zero")
-	}
 	if strings.TrimSpace(req.Name) == "" {
 		return ProxmoxVMTemplateResult{}, fmt.Errorf("name is required")
 	}
@@ -199,6 +199,12 @@ func CreateProxmoxVMTemplate(req ProxmoxVMTemplateRequest) (ProxmoxVMTemplateRes
 		return ProxmoxVMTemplateResult{}, err
 	}
 	ctx := context.Background()
+	if req.VMID <= 0 {
+		req.VMID, err = client.NextVMID(ctx)
+		if err != nil {
+			return ProxmoxVMTemplateResult{}, fmt.Errorf("allocate proxmox VMID: %w", err)
+		}
+	}
 
 	if err := client.CreateVM(ctx, req.Node, req.VMID, buildProxmoxVMCloudImageBaseConfig(req)); err != nil {
 		return ProxmoxVMTemplateResult{}, fmt.Errorf("create VM shell: %w", err)
@@ -284,7 +290,7 @@ func buildProxmoxVMCloudInitConfig(req ProxmoxVMCreateRequest) (*proxmoxQemuConf
 		cfg.Raw["cipassword"] = req.CIPassword
 	}
 	if len(req.SshPublicKeys) > 0 {
-		cfg.Raw["sshkeys"] = strings.Join(req.SshPublicKeys, "\n")
+		cfg.Raw["sshkeys"] = url.QueryEscape(strings.Join(req.SshPublicKeys, "\n"))
 	}
 	if req.BallooningDevice != nil {
 		if !*req.BallooningDevice {
@@ -721,6 +727,17 @@ func (c *proxmoxClient) CreateLXC(ctx context.Context, node string, req ProxmoxL
 		params.Set("console", proxmoxBoolFlag(*req.Console))
 	}
 	return c.do(ctx, http.MethodPost, fmt.Sprintf("/api2/json/nodes/%s/lxc", url.PathEscape(node)), params, nil)
+}
+
+func (c *proxmoxClient) NextVMID(ctx context.Context) (int, error) {
+	var nextID int
+	if err := c.do(ctx, http.MethodGet, "/api2/json/cluster/nextid", nil, &nextID); err != nil {
+		return 0, err
+	}
+	if nextID <= 0 {
+		return 0, fmt.Errorf("proxmox returned invalid next VMID: %d", nextID)
+	}
+	return nextID, nil
 }
 
 func (c *proxmoxClient) CloneVM(ctx context.Context, node string, templateVMID int, req proxmoxCloneRequest) error {
