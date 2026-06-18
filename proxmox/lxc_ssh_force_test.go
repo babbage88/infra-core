@@ -93,7 +93,7 @@ func TestRunPctExecShellScriptUsesRemoteTimeout(t *testing.T) {
 	if len(client.commands) != 1 {
 		t.Fatalf("expected one command, got %d", len(client.commands))
 	}
-	for _, want := range []string{"command -v timeout", "timeout", "15s", "pct exec", "252", "sh -lc", "true"} {
+	for _, want := range []string{"TERM=\"${TERM:-dumb}\"", "command -v timeout", "timeout", "15s", "pct exec", "252", "env TERM=dumb sh -lc", "true"} {
 		if !strings.Contains(client.commands[0], want) {
 			t.Fatalf("pct exec command missing %q: %s", want, client.commands[0])
 		}
@@ -112,6 +112,11 @@ func TestRunPctExecShellScriptDoesNotTimeoutLongBootstrapByDefault(t *testing.T)
 	}
 	if strings.Contains(client.commands[0], "timeout") {
 		t.Fatalf("default pct exec command unexpectedly includes timeout: %s", client.commands[0])
+	}
+	for _, want := range []string{"TERM=\"${TERM:-dumb}\"", "env TERM=dumb sh -lc"} {
+		if !strings.Contains(client.commands[0], want) {
+			t.Fatalf("pct exec command missing %q: %s", want, client.commands[0])
+		}
 	}
 }
 

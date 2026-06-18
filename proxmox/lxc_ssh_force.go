@@ -403,11 +403,11 @@ func RunPctExecShellScriptWithLog(sshClient infraSSH.Client, vmid int, script st
 }
 
 func runPctExecShellScriptWithTimeoutAndLog(sshClient infraSSH.Client, vmid int, script string, timeout time.Duration, log LxcLogSink) ([]byte, error) {
-	command := `pct exec ` + infraSSH.ShellQuote(fmt.Sprintf("%d", vmid)) + ` -- sh -lc ` + infraSSH.ShellQuote(script)
+	command := `pct exec ` + infraSSH.ShellQuote(fmt.Sprintf("%d", vmid)) + ` -- env TERM=dumb sh -lc ` + infraSSH.ShellQuote(script)
 	if timeout > 0 {
 		command = `if command -v timeout >/dev/null 2>&1; then timeout ` + infraSSH.ShellQuote(fmt.Sprintf("%.0fs", timeout.Seconds())) + ` ` + command + `; else ` + command + `; fi`
 	}
-	out, err := sshClient.Run("sh -c " + infraSSH.ShellQuote(command))
+	out, err := sshClient.Run(infraSSH.WithDefaultTERM("sh -c " + infraSSH.ShellQuote(command)))
 	lxcCommandOutput(log, fmt.Sprintf("pct exec %d", vmid), out)
 	if err != nil {
 		return nil, infraSSH.FormatExecError(err, out)
