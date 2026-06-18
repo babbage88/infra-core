@@ -93,7 +93,7 @@ func TestRunPctExecShellScriptUsesRemoteTimeout(t *testing.T) {
 	if len(client.commands) != 1 {
 		t.Fatalf("expected one command, got %d", len(client.commands))
 	}
-	for _, want := range []string{"TERM=\"${TERM:-dumb}\"", "command -v timeout", "timeout", "15s", "pct exec", "252", "env TERM=dumb sh -lc", "true"} {
+	for _, want := range []string{"TERM=\"${TERM:-dumb}\"", "command -v timeout", "timeout", "15s", "pct exec", "252", "env TERM=dumb sh -c", "true"} {
 		if !strings.Contains(client.commands[0], want) {
 			t.Fatalf("pct exec command missing %q: %s", want, client.commands[0])
 		}
@@ -113,10 +113,29 @@ func TestRunPctExecShellScriptDoesNotTimeoutLongBootstrapByDefault(t *testing.T)
 	if strings.Contains(client.commands[0], "timeout") {
 		t.Fatalf("default pct exec command unexpectedly includes timeout: %s", client.commands[0])
 	}
-	for _, want := range []string{"TERM=\"${TERM:-dumb}\"", "env TERM=dumb sh -lc"} {
+	for _, want := range []string{"TERM=\"${TERM:-dumb}\"", "env TERM=dumb sh -c"} {
 		if !strings.Contains(client.commands[0], want) {
 			t.Fatalf("pct exec command missing %q: %s", want, client.commands[0])
 		}
+	}
+}
+
+func TestRunPctExecShellScriptStripsBenignTERMNoiseFromSuccessfulOutput(t *testing.T) {
+	client := &fakeLxcSSHClient{run: func(cmd string) ([]byte, error) {
+		return []byte("tput: No value for $TERM and no -T specified\nDebian GNU/Linux 13 (trixie).\n"), nil
+	}}
+
+	out, err := RunPctExecShellScript(client, 252, "printf test")
+	if err != nil {
+		t.Fatalf("run pct exec script: %v", err)
+	}
+
+	got := string(out)
+	if strings.Contains(got, "tput: No value for $TERM and no -T specified") {
+		t.Fatalf("expected TERM noise to be stripped from output: %q", got)
+	}
+	if !strings.Contains(got, "Debian GNU/Linux 13 (trixie).") {
+		t.Fatalf("expected real output to remain: %q", got)
 	}
 }
 

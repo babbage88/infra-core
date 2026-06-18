@@ -403,11 +403,12 @@ func RunPctExecShellScriptWithLog(sshClient infraSSH.Client, vmid int, script st
 }
 
 func runPctExecShellScriptWithTimeoutAndLog(sshClient infraSSH.Client, vmid int, script string, timeout time.Duration, log LxcLogSink) ([]byte, error) {
-	command := `pct exec ` + infraSSH.ShellQuote(fmt.Sprintf("%d", vmid)) + ` -- env TERM=dumb sh -lc ` + infraSSH.ShellQuote(script)
+	command := `pct exec ` + infraSSH.ShellQuote(fmt.Sprintf("%d", vmid)) + ` -- env TERM=dumb sh -c ` + infraSSH.ShellQuote(script)
 	if timeout > 0 {
 		command = `if command -v timeout >/dev/null 2>&1; then timeout ` + infraSSH.ShellQuote(fmt.Sprintf("%.0fs", timeout.Seconds())) + ` ` + command + `; else ` + command + `; fi`
 	}
 	out, err := sshClient.Run(infraSSH.WithDefaultTERM("sh -c " + infraSSH.ShellQuote(command)))
+	out = sanitizeLxcExecOutput(out)
 	lxcCommandOutput(log, fmt.Sprintf("pct exec %d", vmid), out)
 	if err != nil {
 		return nil, infraSSH.FormatExecError(err, out)
@@ -429,6 +430,24 @@ func RunRemoteQuotedCommandWithLog(sshClient infraSSH.Client, log LxcLogSink, ar
 	}
 
 	return out, nil
+}
+
+func sanitizeLxcExecOutput(out []byte) []byte {
+	if len(out) == 0 {
+		return out
+	}
+
+	lines := strings.Split(string(out), "\n")
+	filtered := make([]string, 0, len(lines))
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.EqualFold(trimmed, "tput: No value for $TERM and no -T specified") {
+			continue
+		}
+		filtered = append(filtered, line)
+	}
+
+	return []byte(strings.Trim(strings.Join(filtered, "\n"), "\n"))
 }
 
 func lxcStatusf(log LxcLogSink, format string, args ...any) {
