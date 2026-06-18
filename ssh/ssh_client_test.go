@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"net"
 	"os"
 	"path/filepath"
@@ -161,6 +162,17 @@ func TestWithDefaultTERMHandlesEmptyCommand(t *testing.T) {
 	want := `TERM="${TERM:-dumb}"`
 	if command != want {
 		t.Fatalf("unexpected command:\nwant: %s\ngot:  %s", want, command)
+	}
+}
+
+func TestFormatExecErrorStripsBenignTERMNoise(t *testing.T) {
+	err := errors.New("process exited with status 255")
+	out := []byte("tput: No value for $TERM and no -T specified\n400 Parameter verification failed.\ntokenid: Token already exists.\n")
+
+	got := FormatExecError(err, out).Error()
+	want := "SSH execution failed: process exited with status 255: 400 Parameter verification failed.\ntokenid: Token already exists."
+	if got != want {
+		t.Fatalf("unexpected formatted error:\nwant: %s\ngot:  %s", want, got)
 	}
 }
 

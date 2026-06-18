@@ -431,11 +431,28 @@ func WithDefaultTERM(command string) string {
 }
 
 func FormatExecError(err error, out []byte) error {
-	output := strings.TrimSpace(string(out))
+	output := sanitizeExecOutput(string(out))
 	if output == "" {
 		return fmt.Errorf("SSH execution failed: %w", err)
 	}
 	return fmt.Errorf("SSH execution failed: %w: %s", err, output)
+}
+
+func sanitizeExecOutput(output string) string {
+	lines := strings.Split(output, "\n")
+	filtered := make([]string, 0, len(lines))
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || isBenignTermNoiseLine(trimmed) {
+			continue
+		}
+		filtered = append(filtered, trimmed)
+	}
+	return strings.TrimSpace(strings.Join(filtered, "\n"))
+}
+
+func isBenignTermNoiseLine(line string) bool {
+	return strings.EqualFold(strings.TrimSpace(line), "tput: No value for $TERM and no -T specified")
 }
 
 func DiscoverPublicKeyContents(explicitPrivateKeyPath string) []string {
