@@ -2,6 +2,9 @@
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
 # Binaries for programs and plugins
+.DS_Store
+internal/.DS_Store
+providers/.DS_Store
 *.exe
 *.exe~
 *.dll

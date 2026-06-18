@@ -33,6 +33,26 @@ func TestBuildMariaDBURLEscapesCredentialsAndDatabase(t *testing.T) {
 	}
 }
 
+func TestShellCommandWithOptionalSudoSkipsSudoForRoot(t *testing.T) {
+	got := shellCommandWithOptionalSudo("root", "apt-get update -y")
+	if got != "apt-get update -y" {
+		t.Fatalf("expected root command without sudo, got %q", got)
+	}
+}
+
+func TestShellWordsWithOptionalSudoAddsSudoForNonRoot(t *testing.T) {
+	got := shellWordsWithOptionalSudo("deploy", []string{"mysql", "-e", "SELECT 1"})
+	want := []string{"sudo", "mysql", "-e", "SELECT 1"}
+	if len(got) != len(want) {
+		t.Fatalf("expected %d words, got %d", len(want), len(got))
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("expected word %d to be %q, got %q", i, want[i], got[i])
+		}
+	}
+}
+
 func TestMergeValkeyInstallDefaults(t *testing.T) {
 	req := ValkeyInstallRequest{
 		Username: "app",

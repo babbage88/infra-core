@@ -489,7 +489,7 @@ func runRemoteQuotedCommand(sshClient coressh.Runner, args ...string) ([]byte, e
 	for _, arg := range args {
 		quoted = append(quoted, coressh.ShellQuote(arg))
 	}
-	command := strings.Join(quoted, " ")
+	command := coressh.WithDefaultTERM(strings.Join(quoted, " "))
 	out, err := sshClient.Run(command)
 	if err != nil {
 		return nil, coressh.FormatExecError(err, out)

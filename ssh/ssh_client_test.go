@@ -146,6 +146,24 @@ func TestDetermineSSHAuthSource(t *testing.T) {
 	}
 }
 
+func TestWithDefaultTERMUsesFallbackWithoutOverwritingExistingTERM(t *testing.T) {
+	command := WithDefaultTERM("'pveum' 'user' 'token' 'list'")
+
+	want := `TERM="${TERM:-dumb}" 'pveum' 'user' 'token' 'list'`
+	if command != want {
+		t.Fatalf("unexpected command:\nwant: %s\ngot:  %s", want, command)
+	}
+}
+
+func TestWithDefaultTERMHandlesEmptyCommand(t *testing.T) {
+	command := WithDefaultTERM("   ")
+
+	want := `TERM="${TERM:-dumb}"`
+	if command != want {
+		t.Fatalf("unexpected command:\nwant: %s\ngot:  %s", want, command)
+	}
+}
+
 func writeTestPrivateKey(t *testing.T) string {
 	t.Helper()
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)

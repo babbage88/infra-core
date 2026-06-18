@@ -25,6 +25,24 @@ func formatRemoteCommandError(err error, out []byte) error {
 	return fmt.Errorf("%w: %s", err, output)
 }
 
+func shellCommandWithOptionalSudo(remoteUser, cmd string) string {
+	cmd = strings.TrimSpace(cmd)
+	if cmd == "" {
+		return ""
+	}
+	if strings.EqualFold(strings.TrimSpace(remoteUser), "root") {
+		return cmd
+	}
+	return "sudo " + cmd
+}
+
+func shellWordsWithOptionalSudo(remoteUser string, values []string) []string {
+	if strings.EqualFold(strings.TrimSpace(remoteUser), "root") {
+		return values
+	}
+	return append([]string{"sudo"}, values...)
+}
+
 func expandLocalPath(path string) string {
 	path = strings.TrimSpace(path)
 	if path == "" {

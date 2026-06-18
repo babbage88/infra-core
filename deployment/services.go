@@ -147,6 +147,10 @@ func MergeMariaDBInstallDefaults(req, defaults MariaDBInstallRequest) MariaDBIns
 }
 
 func InstallMariaDB(req MariaDBInstallRequest) (MariaDBInstallResult, error) {
+	return InstallMariaDBWithLog(req, nil)
+}
+
+func InstallMariaDBWithLog(req MariaDBInstallRequest, log MariaDBInstallLogSink) (MariaDBInstallResult, error) {
 	if strings.TrimSpace(req.SSH.Host) == "" {
 		return MariaDBInstallResult{}, fmt.Errorf("ssh.host is required")
 	}
@@ -175,6 +179,7 @@ func InstallMariaDB(req MariaDBInstallRequest) (MariaDBInstallResult, error) {
 		return MariaDBInstallResult{}, fmt.Errorf("initialize SSH client: %w", err)
 	}
 	defer installer.SshClient.Close()
+	installer.Log = log
 	if err := installer.EnsureInstalledAndConfigured(req.DatabaseName, req.Username, req.Password, req.Bind, req.Port); err != nil {
 		return MariaDBInstallResult{}, err
 	}

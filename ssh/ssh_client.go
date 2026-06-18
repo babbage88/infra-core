@@ -422,6 +422,14 @@ func ShellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
 
+func WithDefaultTERM(command string) string {
+	command = strings.TrimSpace(command)
+	if command == "" {
+		return `TERM="${TERM:-dumb}"`
+	}
+	return `TERM="${TERM:-dumb}" ` + command
+}
+
 func FormatExecError(err error, out []byte) error {
 	output := strings.TrimSpace(string(out))
 	if output == "" {
